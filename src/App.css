@@ -532,6 +532,7 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   width: 100%;
+  position: relative;
 }
 
 .month-labels-row {

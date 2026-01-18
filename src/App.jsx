@@ -91,7 +91,11 @@ const ActivityCalendar = ({ activityData, year }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
   };
 
   return (
@@ -121,8 +125,28 @@ const ActivityCalendar = ({ activityData, year }) => {
               />
             ))}
           </div>
-        </div>
-      </div>
+        </div> {/* closes calendar-body */}
+        <AnimatePresence>
+          {hoveredDay && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="custom-tooltip"
+              style={{
+                position: 'absolute',
+                left: mousePos.x + 15,
+                top: mousePos.y - 15,
+                pointerEvents: 'none',
+                zIndex: 1000
+              }}
+            >
+              <span className="tooltip-date">{hoveredDay.date}</span>
+              <span className="tooltip-value">{parseFloat(hoveredDay.distance).toFixed(1)} km</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div> {/* closes calendar-wrapper */}
       <div className="calendar-footer">
         <span>Less</span>
         <div className="calendar-legend">
@@ -130,27 +154,6 @@ const ActivityCalendar = ({ activityData, year }) => {
         </div>
         <span>More</span>
       </div>
-
-      <AnimatePresence>
-        {hoveredDay && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="custom-tooltip"
-            style={{
-              position: 'fixed',
-              left: mousePos.x + 15,
-              top: mousePos.y - 15,
-              pointerEvents: 'none',
-              zIndex: 1000
-            }}
-          >
-            <span className="tooltip-date">{hoveredDay.date}</span>
-            <span className="tooltip-value">{hoveredDay.distance} km</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
