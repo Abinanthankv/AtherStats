@@ -7,10 +7,13 @@ import {
 import {
   Zap, Map, Gauge, Clock, RefreshCw, Activity, Battery,
   Navigation, ShieldAlert, Wind, TrendingUp, X, Filter,
-  Maximize2, ArrowRight, Sun, Moon
+  Maximize2, ArrowRight, Sun, Moon, BarChart3, LayoutDashboard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAtherData } from './utils/dataFetcher';
+import SummaryPage from './components/SummaryPage';
+import EnhancedMonthlyChart from './components/EnhancedMonthlyChart';
+import RideMapView from './components/RideMapView';
 import './App.css';
 
 const StatCard = ({ label, value, unit, icon: Icon }) => (
@@ -152,6 +155,8 @@ const ActivityCalendar = ({ activityData, year }) => {
 };
 
 const RideModal = ({ ride, onClose, theme, modeColors }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+
   if (!ride) return null;
 
   const speedData = ride.speedTimeSeries.map((s, i) => ({ time: i, speed: s }));
@@ -175,78 +180,99 @@ const RideModal = ({ ride, onClose, theme, modeColors }) => {
           </button>
         </header>
 
+        <div className="modal-tabs">
+          <button
+            className={`modal-tab ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            📊 Overview
+          </button>
+          <button
+            className={`modal-tab ${activeTab === 'map' ? 'active' : ''}`}
+            onClick={() => setActiveTab('map')}
+          >
+            🗺️ Route Map
+          </button>
+        </div>
+
         <div className="modal-body">
-          <div className="modal-stats-grid">
-            <div className="mini-stat">
-              <span className="label">Distance</span>
-              <span className="value">{ride.distance} km</span>
-            </div>
-            <div className="mini-stat">
-              <span className="label">Avg Efficiency</span>
-              <span className="value">{ride.efficiency} Wh/km</span>
-            </div>
-            <div className="mini-stat">
-              <span className="label">Top Speed</span>
-              <span className="value">{ride.topSpeed} km/h</span>
-            </div>
-            <div className="mini-stat">
-              <span className="label">Energy</span>
-              <span className="value">{ride.energyUsed.toFixed(1)} Wh</span>
-            </div>
-          </div>
+          {activeTab === 'overview' ? (
+            <>
+              <div className="modal-stats-grid">
+                <div className="mini-stat">
+                  <span className="label">Distance</span>
+                  <span className="value">{ride.distance} km</span>
+                </div>
+                <div className="mini-stat">
+                  <span className="label">Avg Efficiency</span>
+                  <span className="value">{ride.efficiency} Wh/km</span>
+                </div>
+                <div className="mini-stat">
+                  <span className="label">Top Speed</span>
+                  <span className="value">{ride.topSpeed} km/h</span>
+                </div>
+                <div className="mini-stat">
+                  <span className="label">Energy</span>
+                  <span className="value">{ride.energyUsed.toFixed(1)} Wh</span>
+                </div>
+              </div>
 
-          <div className="modal-chart-section">
-            <div className="modal-chart-card">
-              <h3>Speed Profile (km/h)</h3>
-              <div style={{ width: '100%', height: 200 }}>
-                <ResponsiveContainer>
-                  <AreaChart data={speedData}>
-                    <defs>
-                      <linearGradient id="colorSpeed" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                    <XAxis dataKey="time" hide />
-                    <YAxis stroke="var(--text-secondary)" fontSize={10} tickLine={false} axisLine={false} />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="speed" stroke="var(--primary)" fillOpacity={1} fill="url(#colorSpeed)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+              <div className="modal-chart-section">
+                <div className="modal-chart-card">
+                  <h3>Speed Profile (km/h)</h3>
+                  <div style={{ width: '100%', height: 200 }}>
+                    <ResponsiveContainer>
+                      <AreaChart data={speedData}>
+                        <defs>
+                          <linearGradient id="colorSpeed" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                        <XAxis dataKey="time" hide />
+                        <YAxis stroke="var(--text-secondary)" fontSize={10} tickLine={false} axisLine={false} />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="speed" stroke="var(--primary)" fillOpacity={1} fill="url(#colorSpeed)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
 
-            <div className="modal-chart-card">
-              <h3>Mode Breakdown (km)</h3>
-              <div style={{ width: '100%', height: 200 }}>
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie data={modeData} innerRadius={40} outerRadius={60} paddingAngle={5} dataKey="value">
-                      {modeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={modeColors[entry.name] || 'var(--primary)'} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="modal-chart-card">
+                  <h3>Mode Breakdown (km)</h3>
+                  <div style={{ width: '100%', height: 200 }}>
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie data={modeData} innerRadius={40} outerRadius={60} paddingAngle={5} dataKey="value">
+                          {modeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={modeColors[entry.name] || 'var(--primary)'} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="modal-info-card">
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div className="location-info">
-                <div className="dot start"></div>
-                <span>{ride.location.startAddr || 'Start Location'}</span>
+              <div className="modal-info-card">
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div className="location-info">
+                    <div className="dot start"></div>
+                    <span>{ride.location.startAddr || 'Start Location'}</span>
+                  </div>
+                  <ArrowRight size={14} style={{ color: 'var(--text-secondary)' }} />
+                  <div className="location-info">
+                    <div className="dot end"></div>
+                    <span>{ride.location.endAddr || 'End Location'}</span>
+                  </div>
+                </div>
               </div>
-              <ArrowRight size={14} style={{ color: 'var(--text-secondary)' }} />
-              <div className="location-info">
-                <div className="dot end"></div>
-                <span>{ride.location.endAddr || 'End Location'}</span>
-              </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <RideMapView ride={ride} />
+          )}
         </div>
       </div>
     </div>
@@ -333,6 +359,8 @@ const SetupPage = ({ onConnect }) => {
 function App() {
   // Initialize state
   const [csvUrl, setCsvUrl] = useState(localStorage.getItem('ather_stats_csv_url') || null);
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'summary'
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState(null); // For click-to-filter
   const [data, setData] = useState([]);
 
   // Loading is true only if we have a URL but no data yet (re-load / splash screen case)
@@ -372,12 +400,20 @@ function App() {
     setData(rides);
 
     if (rides && rides.length > 0) {
-      // Monthly Aggregation
+      // Monthly Aggregation with Energy
       const m = rides.reduce((acc, r) => {
         const key = `${r.year}-${r.month}`;
-        if (!acc[key]) acc[key] = { name: `${r.month}/${r.year.toString().slice(-2)}`, distance: 0, efficiency: 0, count: 0 };
+        if (!acc[key]) acc[key] = {
+          name: `${r.month}/${r.year.toString().slice(-2)}`,
+          key: key,
+          distance: 0,
+          efficiency: 0,
+          energy: 0,
+          count: 0
+        };
         acc[key].distance += parseFloat(r.distance);
         acc[key].efficiency += parseFloat(r.efficiency);
+        acc[key].energy += parseFloat(r.energyUsed);
         acc[key].count += 1;
         return acc;
       }, {});
@@ -385,7 +421,8 @@ function App() {
       setMonthlyData(Object.values(m).map(item => ({
         ...item,
         distance: parseFloat(item.distance.toFixed(1)),
-        efficiency: parseFloat((item.efficiency / item.count).toFixed(1))
+        efficiency: parseFloat((item.efficiency / item.count).toFixed(1)),
+        energy: parseFloat((item.energy / 1000).toFixed(2)) // Convert to kWh
       })));
 
       // Activity Data Aggregation
@@ -475,7 +512,8 @@ function App() {
   const filteredData = data.filter(r => {
     const matchesMonth = filterMonth === 'all' || `${r.year}-${r.month}` === filterMonth;
     const matchesDistance = !filterLongRides || parseFloat(r.distance) >= 10;
-    return matchesMonth && matchesDistance;
+    const matchesMonthChart = !selectedMonthFilter || `${r.year}-${r.month}` === selectedMonthFilter;
+    return matchesMonth && matchesDistance && matchesMonthChart;
   });
 
   // Reactive Totals Calculation
@@ -653,6 +691,23 @@ function App() {
         </div>
       </header>
 
+      <nav className="main-nav">
+        <button
+          className={`nav-tab ${currentView === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setCurrentView('dashboard')}
+        >
+          <LayoutDashboard size={18} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+          Dashboard
+        </button>
+        <button
+          className={`nav-tab ${currentView === 'summary' ? 'active' : ''}`}
+          onClick={() => setCurrentView('summary')}
+        >
+          <BarChart3 size={18} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+          Summary
+        </button>
+      </nav>
+
       <AnimatePresence>
         {error && (
           <motion.div
@@ -682,206 +737,202 @@ function App() {
         )}
       </AnimatePresence>
 
-      <div className="chart-card" style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>Activity Heatmap</h3>
-          <div className="filter-group" style={{ padding: '0.4rem 1rem' }}>
-            <span style={{ fontSize: '0.8rem', marginRight: '0.5rem' }}>Year:</span>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="filter-select"
-            >
-              {availableYears.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <ActivityCalendar activityData={activityData} year={selectedYear} />
-      </div>
-
-      <div className="stats-grid">
-        <StatCard label="Total Distance" value={totals.distance} unit="km" icon={Map} />
-        <StatCard label="Riding Time" value={totals.duration} unit="mins" icon={Clock} />
-        <StatCard label="Energy Used" value={totals.energy} unit="kWh" icon={Battery} />
-        <StatCard label="Avg Efficiency" value={totals.efficiency} unit="Wh/km" icon={Zap} />
-        <StatCard label="Max Speed" value={totals.topSpeed} unit="km/h" icon={Gauge} />
-        <StatCard label="Total Rides" value={totals.rides} unit="" icon={Activity} />
-      </div>
-
-      <div className="charts-section" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <div className="chart-card">
-          <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Efficiency Trend (Wh/km)</h3>
-          <div style={{ width: '100%', height: 350 }}>
-            <ResponsiveContainer>
-              <AreaChart data={filteredData.slice(-30)}>
-                <defs>
-                  <linearGradient id="colorEff" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                <XAxis dataKey="date" hide />
-                <YAxis stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip />
-                <Area type="monotone" dataKey="efficiency" stroke="var(--secondary)" fillOpacity={1} fill="url(#colorEff)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="chart-card">
-          <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Overall Riding Behavior</h3>
-          <div style={{ width: '100%', height: 350 }}>
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={behaviorPieData}
-                  innerRadius={70}
-                  outerRadius={90}
-                  paddingAngle={8}
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={1500}
+      {currentView === 'summary' ? (
+        <SummaryPage data={data} theme={theme} />
+      ) : (
+        <>
+          <div className="chart-card" style={{ marginBottom: '2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>Activity Heatmap</h3>
+              <div className="filter-group" style={{ padding: '0.4rem 1rem' }}>
+                <span style={{ fontSize: '0.8rem', marginRight: '0.5rem' }}>Year:</span>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  className="filter-select"
                 >
-                  {behaviorPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {availableYears.map(y => (
+                    <option key={y} value={y}>{y}</option>
                   ))}
-                </Pie>
-                <Tooltip />
-                <Legend verticalAlign="bottom" height={36} />
-              </PieChart>
-            </ResponsiveContainer>
+                </select>
+              </div>
+            </div>
+            <ActivityCalendar activityData={activityData} year={selectedYear} />
           </div>
-        </div>
-      </div>
 
-      <div className="charts-section" style={{ gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)' }}>
-        <div className="chart-card">
-          <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Mode Usage - Last 15 Rides (km)</h3>
-          <div style={{ width: '100%', height: 350 }}>
-            <ResponsiveContainer>
-              <BarChart data={modeChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                <XAxis dataKey="date" fontSize={10} stroke="var(--text-secondary)" />
-                <YAxis
-                  stroke="var(--text-secondary)"
-                  fontSize={12}
-                  label={{ value: 'km', angle: -90, position: 'insideLeft', fill: 'var(--text-secondary)', offset: 10 }}
-                />
-                <Tooltip
-                  formatter={(val) => `${val} km`}
-                />
-                <Legend />
-                <Bar dataKey="Eco" stackId="a" fill={modeColors.Eco} />
-                <Bar dataKey="SmartEco" stackId="a" fill={modeColors.SmartEco} />
-                <Bar dataKey="Ride" stackId="a" fill={modeColors.Ride} />
-                <Bar dataKey="Sport" stackId="a" fill={modeColors.Sport} />
-                <Bar dataKey="Warp" stackId="a" fill={modeColors.Warp} />
-                <Bar dataKey="Zip" stackId="a" fill={modeColors.Zip} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="stats-grid">
+            <StatCard label="Total Distance" value={totals.distance} unit="km" icon={Map} />
+            <StatCard label="Riding Time" value={totals.duration} unit="mins" icon={Clock} />
+            <StatCard label="Energy Used" value={totals.energy} unit="kWh" icon={Battery} />
+            <StatCard label="Avg Efficiency" value={totals.efficiency} unit="Wh/km" icon={Zap} />
+            <StatCard label="Max Speed" value={totals.topSpeed} unit="km/h" icon={Gauge} />
+            <StatCard label="Total Rides" value={totals.rides} unit="" icon={Activity} />
           </div>
-        </div>
 
-        <div className="chart-card">
-          <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Lifetime Distance by Mode (km)</h3>
-          <div style={{ width: '100%', height: 350 }}>
-            <ResponsiveContainer>
-              <BarChart data={aggregatedChartData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" horizontal={false} />
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" fontSize={12} width={70} />
-                <Tooltip
-                  cursor={{ fill: 'var(--card-border)' }}
-                />
-                <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="charts-section" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="chart-card">
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Efficiency Trend (Wh/km)</h3>
+              <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer>
+                  <AreaChart data={filteredData.slice(-30)}>
+                    <defs>
+                      <linearGradient id="colorEff" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                    <XAxis dataKey="date" hide />
+                    <YAxis stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="efficiency" stroke="var(--secondary)" fillOpacity={1} fill="url(#colorEff)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="chart-card">
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Overall Riding Behavior</h3>
+              <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={behaviorPieData}
+                      innerRadius={70}
+                      outerRadius={90}
+                      paddingAngle={8}
+                      dataKey="value"
+                      animationBegin={0}
+                      animationDuration={1500}
+                    >
+                      {behaviorPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="charts-section" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
-        <div className="chart-card">
-          <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Monthly Performance (Distance & Efficiency)</h3>
-          <div style={{ width: '100%', height: 400 }}>
-            <ResponsiveContainer>
-              <ComposedChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis yAxisId="left" stroke="var(--primary)" fontSize={12} tickLine={false} axisLine={false} label={{ value: 'Distance (km)', angle: -90, position: 'insideLeft', fill: 'var(--primary)', offset: 10 }} />
-                <YAxis yAxisId="right" orientation="right" stroke="var(--secondary)" fontSize={12} tickLine={false} axisLine={false} label={{ value: 'Efficiency (Wh/km)', angle: 90, position: 'insideRight', fill: 'var(--secondary)', offset: 10 }} />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="distance" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={40} name="Total Distance (km)" />
-                <Line yAxisId="right" type="monotone" dataKey="efficiency" stroke="var(--secondary)" strokeWidth={3} dot={{ fill: 'var(--secondary)', r: 4 }} name="Avg Efficiency (Wh/km)" />
-              </ComposedChart>
-            </ResponsiveContainer>
+          <div className="charts-section" style={{ gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)' }}>
+            <div className="chart-card">
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Mode Usage - Last 15 Rides (km)</h3>
+              <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer>
+                  <BarChart data={modeChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                    <XAxis dataKey="date" fontSize={10} stroke="var(--text-secondary)" />
+                    <YAxis
+                      stroke="var(--text-secondary)"
+                      fontSize={12}
+                      label={{ value: 'km', angle: -90, position: 'insideLeft', fill: 'var(--text-secondary)', offset: 10 }}
+                    />
+                    <Tooltip
+                      formatter={(val) => `${val} km`}
+                    />
+                    <Legend />
+                    <Bar dataKey="Eco" stackId="a" fill={modeColors.Eco} />
+                    <Bar dataKey="SmartEco" stackId="a" fill={modeColors.SmartEco} />
+                    <Bar dataKey="Ride" stackId="a" fill={modeColors.Ride} />
+                    <Bar dataKey="Sport" stackId="a" fill={modeColors.Sport} />
+                    <Bar dataKey="Warp" stackId="a" fill={modeColors.Warp} />
+                    <Bar dataKey="Zip" stackId="a" fill={modeColors.Zip} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="chart-card">
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>Lifetime Distance by Mode (km)</h3>
+              <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer>
+                  <BarChart data={aggregatedChartData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" horizontal={false} />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" fontSize={12} width={70} />
+                    <Tooltip
+                      cursor={{ fill: 'var(--card-border)' }}
+                    />
+                    <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="table-section">
-        <h3 style={{ marginBottom: '1.5rem' }}>Detailed Ride Analytics</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Date / ID</th>
-              <th>Distance</th>
-              <th>Duration</th>
-              <th>Efficiency</th>
-              <th>Behavior (R/B/C)</th>
-              <th>SOC Usage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.slice().reverse().map((ride, i) => (
-              <tr key={i} onClick={() => setSelectedRide(ride)} style={{ cursor: 'pointer' }}>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Maximize2 size={12} style={{ color: 'var(--text-secondary)' }} />
-                    <div>
-                      <div style={{ fontWeight: '600' }}>{ride.date}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{ride.id}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>{ride.distance} km</td>
-                <td>{ride.duration} min</td>
-                <td>
-                  <div>{ride.efficiency} Wh/km</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <TrendingUp size={10} /> {ride.efficiency_km_kwh} km/kWh
-                  </div>
-                </td>
-                <td style={{ minWidth: '200px' }}>
-                  <BehaviorBar behavior={ride.behavior} />
-                  <div className="behavior-legend">
-                    <div className="legend-item"><div className="dot behavior-riding"></div> {ride.behavior.riding}%</div>
-                    <div className="legend-item"><div className="dot behavior-braking"></div> {ride.behavior.braking}%</div>
-                    <div className="legend-item"><div className="dot behavior-coasting"></div> {ride.behavior.coasting}%</div>
-                  </div>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{
-                        background: ride.socPercent < 15 ? 'var(--error)' : 'linear-gradient(90deg, #29B6F6, #00E676)',
-                        height: '100%',
-                        width: `${Math.min(ride.socPercent, 100)}%`
-                      }}></div>
-                    </div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{ride.socPercent}%</span>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="charts-section" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
+            <EnhancedMonthlyChart
+              monthlyData={monthlyData}
+              selectedMonthFilter={selectedMonthFilter}
+              onMonthClick={(monthKey) => {
+                setSelectedMonthFilter(selectedMonthFilter === monthKey ? null : monthKey);
+              }}
+            />
+          </div>
+
+          <div className="table-section">
+            <h3 style={{ marginBottom: '1.5rem' }}>Detailed Ride Analytics</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Date / ID</th>
+                  <th>Distance</th>
+                  <th>Duration</th>
+                  <th>Efficiency</th>
+                  <th>Behavior (R/B/C)</th>
+                  <th>SOC Usage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.slice().reverse().map((ride, i) => (
+                  <tr key={i} onClick={() => setSelectedRide(ride)} style={{ cursor: 'pointer' }}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Maximize2 size={12} style={{ color: 'var(--text-secondary)' }} />
+                        <div>
+                          <div style={{ fontWeight: '600' }}>{ride.date}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{ride.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{ride.distance} km</td>
+                    <td>{ride.duration} min</td>
+                    <td>
+                      <div>{ride.efficiency} Wh/km</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <TrendingUp size={10} /> {ride.efficiency_km_kwh} km/kWh
+                      </div>
+                    </td>
+                    <td style={{ minWidth: '200px' }}>
+                      <BehaviorBar behavior={ride.behavior} />
+                      <div className="behavior-legend">
+                        <div className="legend-item"><div className="dot behavior-riding"></div> {ride.behavior.riding}%</div>
+                        <div className="legend-item"><div className="dot behavior-braking"></div> {ride.behavior.braking}%</div>
+                        <div className="legend-item"><div className="dot behavior-coasting"></div> {ride.behavior.coasting}%</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{
+                            background: ride.socPercent < 15 ? 'var(--error)' : 'linear-gradient(90deg, #29B6F6, #00E676)',
+                            height: '100%',
+                            width: `${Math.min(ride.socPercent, 100)}%`
+                          }}></div>
+                        </div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{ride.socPercent}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -4,13 +4,18 @@ A sleek, performance-focused Progressive Web App (PWA) to visualize your Ather s
 
 ## Features ✨
 
-- **Data Visualization**: Beautiful interactive charts for distance, efficiency, energy usage, and ride modes.
-- **Ride Analytics**: Detailed breakdown of every ride, including top speed, average speed, and duration.
-- **Heatmap**: GitHub-style activity heatmap to track your riding habits over the year.
-- **Dark/Light Mode**: Fully responsive design with automatic and manual theme switching.
-- **PWA Support**: Installable on Android, iOS, and Desktop for a native app experience.
-- **Offline Capable**: Works offline after the first load (cached data).
-- **Privacy Focused**: Your data stays in your browser (LocalStorage). We do not store your CSV URL or data on any server.
+- **📊 Summary Page**: Daily, weekly, and monthly summaries with trend analysis
+  - Compare periods with visual trend indicators
+  - Click any period for detailed breakdown charts
+  - Track active days and riding consistency
+- **📈 Data Visualization**: Beautiful interactive charts for distance, efficiency, energy usage, and ride modes
+- **🔍 Ride Analytics**: Detailed breakdown of every ride, including top speed, average speed, and duration
+- **📅 Activity Heatmap**: GitHub-style activity heatmap to track your riding habits over the year
+- **🌓 Dark/Light Mode**: Fully responsive design with automatic and manual theme switching
+- **📱 Mobile Responsive**: Optimized for all screen sizes - phones, tablets, and desktops
+- **💾 PWA Support**: Installable on Android, iOS, and Desktop for a native app experience
+- **🔌 Offline Capable**: Works offline after the first load (cached data)
+- **🔒 Privacy Focused**: Your data stays in your browser (LocalStorage). We do not store your CSV URL or data on any server
 
 ## How to Use 🚀
 

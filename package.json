@@ -12,11 +12,14 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@mapbox/polyline": "^1.2.1",
     "framer-motion": "^12.25.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",
     "papaparse": "^5.5.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0",
     "recharts": "^3.6.0"
   },
   "devDependencies": {
