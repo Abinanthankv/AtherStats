@@ -155,8 +155,24 @@ body {
 header {
   margin-bottom: 3rem;
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
+}
+
+.header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 
 h1 {
@@ -833,23 +849,20 @@ tr:last-child td {
   header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.5rem;
     margin-bottom: 2rem;
+    gap: 1rem;
   }
 
-  h1 {
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-main h1 {
     font-size: 2rem;
   }
 
-  .subtitle {
+  .header-main .subtitle {
     font-size: 0.9rem;
-  }
-
-  /* Header Actions - Make them stack and full width */
-  header>div:last-child {
-    width: 100%;
-    flex-direction: column;
-    gap: 0.75rem;
   }
 
   .filter-group {
@@ -872,15 +885,16 @@ tr:last-child td {
   }
 
   /* Buttons */
-  .btn-refresh {
+  .btn-refresh:not(.btn-icon) {
     width: 100%;
     justify-content: center;
     padding: 0.875rem 1rem;
   }
 
   .btn-icon {
-    width: 100%;
-    aspect-ratio: auto;
+    width: auto;
+    aspect-ratio: 1;
+    flex-shrink: 0;
   }
 
   /* Stats Grid */
@@ -2380,4 +2394,173 @@ tr:last-child td {
     width: 100%;
     margin-bottom: 0.5rem;
   }
+}
+
+/* Mobile Menu */
+.mobile-menu-btn {
+  display: none;
+  background: var(--primary);
+  border: none;
+  color: var(--on-primary);
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+}
+
+.mobile-menu-btn:hover {
+  background: #00C853;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 230, 118, 0.4);
+}
+
+.desktop-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 5rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.mobile-menu>div {
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  min-width: 280px;
+  max-width: 90%;
+  overflow: hidden;
+  animation: slideDownMenu 0.3s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes slideDownMenu {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mobile-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.125rem 1.5rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 1px solid var(--card-border);
+  text-align: left;
+}
+
+.mobile-menu-item:last-child {
+  border-bottom: none;
+}
+
+.mobile-menu-item:hover {
+  background: rgba(0, 230, 118, 0.15);
+  color: var(--primary);
+}
+
+.mobile-menu-item:active {
+  background: rgba(0, 230, 118, 0.25);
+}
+
+.mobile-menu-item.disconnect {
+  color: #FF5252;
+}
+
+.mobile-menu-item.disconnect:hover {
+  background: rgba(255, 82, 82, 0.15);
+  color: #FF5252;
+}
+
+.mobile-menu-item svg {
+  flex-shrink: 0;
+}
+
+.mobile-menu-item span {
+  flex: 1;
+}
+
+/* Mobile responsive - Show mobile menu, hide desktop actions */
+@media (max-width: 768px) {
+  .desktop-actions {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-menu>div {
+    min-width: auto;
+    width: calc(100% - 2rem);
+  }
+
+  .mobile-menu-item {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    color: var(--text-primary) !important;
+  }
+}
+
+/* Ensure mobile menu text is always visible */
+.mobile-menu-item span {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+[data-theme='light'] .mobile-menu-item span {
+  color: #000000;
+}
+
+[data-theme='dark'] .mobile-menu-item span {
+  color: #ffffff;
+}
+
+.mobile-menu-item svg {
+  color: var(--primary);
+}
+
+.mobile-menu-item.disconnect svg {
+  color: #FF5252;
 }

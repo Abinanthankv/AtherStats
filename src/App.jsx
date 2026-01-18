@@ -7,7 +7,7 @@ import {
 import {
   Zap, Map, Gauge, Clock, RefreshCw, Activity, Battery,
   Navigation, ShieldAlert, Wind, TrendingUp, X, Filter,
-  Maximize2, ArrowRight, Sun, Moon, BarChart3, LayoutDashboard
+  Maximize2, ArrowRight, Sun, Moon, BarChart3, LayoutDashboard, Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAtherData } from './utils/dataFetcher';
@@ -361,6 +361,7 @@ function App() {
   const [csvUrl, setCsvUrl] = useState(localStorage.getItem('ather_stats_csv_url') || null);
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'summary'
   const [selectedMonthFilter, setSelectedMonthFilter] = useState(null); // For click-to-filter
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile menu state
   const [data, setData] = useState([]);
 
   // Loading is true only if we have a URL but no data yet (re-load / splash screen case)
@@ -653,11 +654,21 @@ function App() {
       </div>
       {selectedRide && <RideModal ride={selectedRide} onClose={() => setSelectedRide(null)} theme={theme} modeColors={modeColors} />}
       <header>
-        <div>
-          <h1>Ather Stats</h1>
-          <p className="subtitle">Comprehensive performance analytics</p>
+        <div className="header-main">
+          <div>
+            <h1>Ather Stats</h1>
+            <p className="subtitle">Comprehensive performance analytics</p>
+          </div>
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menu"
+          >
+            <Menu size={24} />
+          </button>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+
+        <div className="header-actions">
           <div className="filter-group">
             <Filter size={16} />
             <select
@@ -679,16 +690,40 @@ function App() {
               Long Rides ({">"}10km)
             </label>
           </div>
-          <button className="btn-refresh btn-icon" onClick={toggleTheme} aria-label="Toggle Theme">
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <button className="btn-refresh" onClick={handleDisconnect} style={{ background: 'var(--card-bg)', border: '1px solid var(--outline)', color: 'var(--text-primary)' }} aria-label="Disconnect">
-            <span style={{ fontSize: '0.9rem' }}>Disconnect</span>
-          </button>
-          <button className="btn-refresh" onClick={() => setRefreshTrigger(t => t + 1)}>
-            <RefreshCw size={18} /> Refresh
-          </button>
+
+          {/* Desktop buttons */}
+          <div className="desktop-actions">
+            <button className="btn-refresh btn-icon" onClick={toggleTheme} aria-label="Toggle Theme">
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button className="btn-refresh" onClick={handleDisconnect} style={{ background: 'var(--card-bg)', border: '1px solid var(--outline)', color: 'var(--text-primary)' }} aria-label="Disconnect">
+              <span style={{ fontSize: '0.9rem' }}>Disconnect</span>
+            </button>
+            <button className="btn-refresh" onClick={() => setRefreshTrigger(t => t + 1)}>
+              <RefreshCw size={18} /> Refresh
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="mobile-menu" onClick={() => setMobileMenuOpen(false)}>
+            <div onClick={e => e.stopPropagation()}>
+              <button className="mobile-menu-item" onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}>
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+              <button className="mobile-menu-item" onClick={() => { setRefreshTrigger(t => t + 1); setMobileMenuOpen(false); }}>
+                <RefreshCw size={20} />
+                <span>Refresh Data</span>
+              </button>
+              <button className="mobile-menu-item disconnect" onClick={() => { handleDisconnect(); setMobileMenuOpen(false); }}>
+                <X size={20} />
+                <span>Disconnect</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       <nav className="main-nav">
