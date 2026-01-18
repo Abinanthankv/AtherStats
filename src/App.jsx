@@ -14,6 +14,7 @@ import { fetchAtherData } from './utils/dataFetcher';
 import SummaryPage from './components/SummaryPage';
 import EnhancedMonthlyChart from './components/EnhancedMonthlyChart';
 import RideMapView from './components/RideMapView';
+import Scooter3DView from './components/Scooter3DView';
 import './App.css';
 
 const StatCard = ({ label, value, unit, icon: Icon }) => (
@@ -359,7 +360,7 @@ const SetupPage = ({ onConnect }) => {
 function App() {
   // Initialize state
   const [csvUrl, setCsvUrl] = useState(localStorage.getItem('ather_stats_csv_url') || null);
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'summary'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'summary', or 'vehicle'
   const [selectedMonthFilter, setSelectedMonthFilter] = useState(null); // For click-to-filter
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile menu state
   const [data, setData] = useState([]);
@@ -741,6 +742,13 @@ function App() {
           <BarChart3 size={18} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
           Summary
         </button>
+        <button
+          className={`nav-tab ${currentView === 'vehicle' ? 'active' : ''}`}
+          onClick={() => setCurrentView('vehicle')}
+        >
+          <Gauge size={18} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+          Vehicle
+        </button>
       </nav>
 
       <AnimatePresence>
@@ -774,6 +782,18 @@ function App() {
 
       {currentView === 'summary' ? (
         <SummaryPage data={data} theme={theme} />
+      ) : currentView === 'vehicle' ? (
+        <div className="vehicle-view">
+          <div className="chart-card">
+            <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Ather 450X - 3D Perspective</h3>
+            <Scooter3DView />
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Move your mouse over the scooter to experience 3D depth perception.
+              </p>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           <div className="chart-card" style={{ marginBottom: '2.5rem' }}>
